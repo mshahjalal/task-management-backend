@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 
-import { verifyPermission } from "../services/role-service";
+import { getRoleInfoByFilterQuery, verifyPermission } from "../services/role-service";
 
 export const authorization = function (requiredPermissions: String[], optionalPermissions?: String[]){
     return async (req: Request, res: Response, next: NextFunction) => {
@@ -19,6 +19,13 @@ export const authorization = function (requiredPermissions: String[], optionalPe
 
             //@ts-ignore
             req.user.permissions = validPermissions;
+
+            const roleInfo: any = await getRoleInfoByFilterQuery({userIds: {$in: [user._id]}});
+
+            if (roleInfo){
+                //@ts-ignore
+                req.user.role = roleInfo.roleTitle;
+            }
             
             return next();
         } catch (err: any) {

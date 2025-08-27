@@ -1,3 +1,16 @@
 export default {
-   
+    PORT: 5001,
+    NODE_ENV: "development",
+    MONGO_IP: "mongo",
+    MONGO_PORT: 27017,
+    MONGO_USER: "",
+    MONGO_PASSWORD: "",
+    MONGO_DB_NAME: "tsm",
+    MONGO_CLUSTER: "",
+    JWT_SECRET: "",
+    SALT_ROUNDS: 10,
+    FRONT_END_BASE_URL: "",
+    APPLICATION_FULL_NAME: "Task Management System",
+    APPLICATION_SHORT_NAME: "TSM",
+    PASSWORD_MIN_LENGTH: 8,
 };

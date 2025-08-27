@@ -14,8 +14,8 @@ export interface HistoryDocument extends mongoose.Document {
         oldValue: String;
         newValue: String;
     };
-    createdByName: String;
-    createdBy: mongoose.Types.ObjectId;
+    roleTitle: String;
+    createdBy: mongoose.Schema.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
 };
@@ -31,15 +31,16 @@ export const HistorySchema = new mongoose.Schema(
             required: true
         },
         collectionId: {
-            type: mongoose.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
             required: true
         },
         visibility: [String],
         changes: HistoryChangesSchema,
-        createdByName: String,
+        roleTitle: String,
         createdBy: {
-            type: mongoose.Types.ObjectId,
-            required: true
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            ref: "User"
         },
     },
     { timestamps: true }

@@ -4,12 +4,29 @@ export interface TaskDocument extends mongoose.Document {
     taskTitle: String;
     description: String;
     status: String;
-    projectId: mongoose.Types.ObjectId;
-    userIds: [mongoose.Types.ObjectId];
-    createdBy: mongoose.Types.ObjectId;
+    priority: String;
+    dueDate: Date;
+    projectId: mongoose.Schema.Types.ObjectId;
+    userIds: [mongoose.Schema.Types.ObjectId];
+    createdBy: mongoose.Schema.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
 };
+
+export const TaskCommentSchema = new mongoose.Schema(
+    {
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        },
+        comment: {
+            type: String,
+        },
+        commentDate: {
+            type: Date
+        }
+    }
+);
 
 export const TaskSchema = new mongoose.Schema(
     {
@@ -33,24 +50,21 @@ export const TaskSchema = new mongoose.Schema(
         dueDate: {
             type: Date,
         },
-        comments: [
+        comments: [TaskCommentSchema],
+        projectId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Project"
+        },
+        userIds: [
             {
-                userId: {
-                    type: mongoose.Types.ObjectId,
-                },
-                comment: {
-                    type: String,
-                },
-                commentDate: {
-                    type:Date
-                }
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User"
             }
         ],
-        projectId: mongoose.Types.ObjectId,
-        userIds: [mongoose.Types.ObjectId],
         createdBy: {
-            type: mongoose.Types.ObjectId,
-            required: true
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            ref: "User"
         }
     },
     { timestamps: true }

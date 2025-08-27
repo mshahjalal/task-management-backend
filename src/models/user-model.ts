@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 export interface UserTokenDocument {
-    _id: mongoose.Types.ObjectId;
+    _id: mongoose.Schema.Types.ObjectId;
     name: String;
     email: String;
     active: Boolean;

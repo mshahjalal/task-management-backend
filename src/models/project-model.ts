@@ -4,8 +4,10 @@ export interface ProjectDocument extends mongoose.Document {
     projectTitle: String;
     description: String;
     status: String;
-    userIds: [mongoose.Types.ObjectId];
-    createdBy: mongoose.Types.ObjectId;
+    startDate: Date;
+    endDate: Date;
+    userIds: [mongoose.Schema.Types.ObjectId];
+    createdBy: mongoose.Schema.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
 };
@@ -23,10 +25,18 @@ export const ProjectSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        userIds: [mongoose.Types.ObjectId],
+        startDate: Date,
+        endDate: Date,
+        userIds: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User"
+            }
+        ],
         createdBy: {
-            type: mongoose.Types.ObjectId,
-            required: true
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            ref: "User"
         }
     },
     { timestamps: true }

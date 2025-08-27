@@ -4,16 +4,16 @@ export interface RoleDocument extends mongoose.Document {
     roleTitle: String;
     roleType: String;
     active: Boolean;
-    default: Boolean;
     permissions: String[];
-    userIds: [mongoose.Types.ObjectId];
-    createdBy: mongoose.Types.ObjectId;
+    userIds: [mongoose.Schema.Types.ObjectId];
+    superAdminUserId: mongoose.Schema.Types.ObjectId;
+    createdBy: mongoose.Schema.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
 };
 
 export interface RoleChangeInput {
-    assigneeId: mongoose.Types.ObjectId;
+    assigneeId: mongoose.Schema.Types.ObjectId;
     roleType: String;
 };
 
@@ -26,13 +26,10 @@ export const RoleSchema = new mongoose.Schema(
         roleType: {
             type: String,
             unique: true,
-            required: true
+            required: true,
+            lowercase: true
         },
         active: {
-            type: Boolean,
-            default: false
-        },
-        default: {
             type: Boolean,
             default: false
         },
@@ -40,10 +37,19 @@ export const RoleSchema = new mongoose.Schema(
             type: [String],
             required: true
         },
-        userIds: [mongoose.Types.ObjectId],
-        superAdminUserId: mongoose.Types.ObjectId,
+        userIds: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            }
+        ],
+        superAdminUserId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        },
         createdBy: {
-            type: mongoose.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
             required: true
         }
     },

@@ -52,7 +52,7 @@ export const getToken = async (user: any) => {
 
 //Verify user token
 export const verifyToken = async (token: string) => {
-    const splitedToken = token ? token.split("Bearer") : '';
+    const splitedToken = token ? token.split("Bearer ") : '';
     const user: any = splitedToken && splitedToken[1] ? jwt.verify(splitedToken[1], config.get<string>("JWT_SECRET")) : false;
 
     let customError: any = {};

@@ -4,7 +4,7 @@ export interface BoardSectionDocument extends mongoose.Document {
     sectionTitle: String;
     sectionType: String;
     active: Boolean;
-    createdBy: mongoose.Types.ObjectId;
+    createdBy: mongoose.Schema.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
 };
@@ -25,8 +25,9 @@ export const BoardSectionSchema = new mongoose.Schema(
             default: false
         },
         createdBy: {
-            type: mongoose.Types.ObjectId,
-            required: true
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            ref: "User"
         }
     },
     { timestamps: true }

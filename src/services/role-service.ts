@@ -4,8 +4,11 @@ import { FilterQuery, ObjectId } from "mongoose";
 import _ from "lodash";
 
 import Role, { RoleDocument, RoleChangeInput } from "../models/role-model";
+import User from "../models/user-model";
+
 import { getNewHistory } from "../helpers/history-helper";
 import { addHistoryInfo } from "./history-service";
+import { getStaticRoleList } from "../helpers/role-rules";
 
 export const getRoleInfoByFilterQuery = async (query: FilterQuery<RoleDocument>) => {
     try {
@@ -79,7 +82,7 @@ export const updateRoleTypeInfo = async (req: Request) => {
     session.startTransaction();
 
     const opts = { session: session };
-    
+
     try {
         const inputData: RoleChangeInput = req.body;
 
@@ -95,20 +98,19 @@ export const updateRoleTypeInfo = async (req: Request) => {
             throw customError;
         }
 
-        const previousRoleInfo: any = await getRoleInfoByFilterQuery({ userIds: { $in: [assigneeId] }, superAdminUserId: assigneeId });
+        const createdBy = loggedInUserInfo._id;
 
-        if (previousRoleInfo && previousRoleInfo.roleType !== newRoleType) {
+        const roleInfo: any = await getRoleInfoByFilterQuery({ userIds: { $in: [assigneeId] } });
+
+        if (roleInfo && roleInfo.roleType !== newRoleType && roleInfo.superAdminUserId && assigneeId === (roleInfo.superAdminUserId).toString()) {
             const customError: any = new Error("You are not authorized for this user role update");
             customError.statusCode = 401;
             throw customError;
         }
 
-        const roleInfo: any = await getRoleInfoByFilterQuery({ userIds: { $in: [assigneeId] } });
+        let history: any = [];
 
         if (roleInfo && roleInfo.roleType !== newRoleType) {
-            const createdBy = loggedInUserInfo._id;
-            let history: any = [];
-
             //assignee new role added
             const newRole = await Role.updateOne({ roleType: newRoleType }, { $addToSet: { userIds: assigneeId } }, opts);
 
@@ -118,10 +120,21 @@ export const updateRoleTypeInfo = async (req: Request) => {
 
                 //For activity information
                 const changes = { oldValue: roleInfo.roleType, newValue: newRoleType };
-                history.push(await getNewHistory("update_role_type", roleInfo._id, createdBy, changes, { createdByName: loggedInUserInfo.name }));
-
-                const histories = await addHistoryInfo(history, opts);
+                history.push(await getNewHistory("update_role_type", roleInfo._id, createdBy, changes, { roleTitle: loggedInUserInfo.role }));
             }
+
+        } else if (!roleInfo) {
+            const newRoleInfo: any = await getRoleInfoByFilterQuery({ roleType: newRoleType });
+
+            //assignee new role added
+            const newRole: any = await Role.updateOne({ _id: newRoleInfo._id }, { $addToSet: { userIds: assigneeId } }, opts);
+
+            const changes = { newValue: newRoleType };
+            history.push(await getNewHistory("assign_role", newRoleInfo._id, createdBy, changes, { roleTitle: loggedInUserInfo.role }));
+        }
+
+        if (_.size(history)) {
+            const histories: any = await addHistoryInfo(history, opts);
         }
 
         await session.commitTransaction();
@@ -132,7 +145,42 @@ export const updateRoleTypeInfo = async (req: Request) => {
     } catch (err: any) {
         await session.abortTransaction();
         session.endSession();
-        
+
+        throw err;
+    }
+};
+
+const insertMultipleRole = async (inputData: Partial<[RoleDocument]>, opts?: any) => {
+    try {
+        return await Role.create(inputData, opts);
+    } catch (err: any) {
+        throw err;
+    }
+};
+
+//Add default role info to database
+export const addMultipleDefaultRole = async (req: Request) => {
+    try {
+        let inputData: any = await getStaticRoleList();
+
+        //@ts-ignore 
+        const loggedInUserInfo = req.user;
+
+        const createdBy = loggedInUserInfo._id;
+
+        // const userInfo: any = await User.findOne({});
+        // const createdBy = userInfo._id;
+
+        await Promise.all(_.map(inputData, (inputInfo) => {
+            if (inputInfo.roleType === "admin") inputInfo.superAdminUserId = createdBy;
+
+            inputInfo.userIds = [createdBy];
+            inputInfo.createdBy = createdBy;
+        }));
+
+        return await insertMultipleRole(inputData);
+
+    } catch (err: any) {
         throw err;
     }
 };

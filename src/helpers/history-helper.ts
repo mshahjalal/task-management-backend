@@ -5,9 +5,19 @@ import _ from "lodash";
 export const actionInfos = [
     // role history
     {
+        action: "assign_role",
+        collectionName: "roles",
+        visibility: ["users"]
+    },
+    {
         action: "update_role_type",
         collectionName: "roles",
         visibility: ["users"]
+    },
+    {
+        action: "create_new_project",
+        collectionName: "projects",
+        visibility: ["users", "projects"]
     }
 ];
 
